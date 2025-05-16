@@ -34,6 +34,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+async def background_status_updater():
+    while True:
+        try:
+            status = await get_tracking_info()
+            with open("status_cache.json", "w") as f:
+                json.dump(status, f)
+            print("[Background] Status cache updated.")
+        except Exception as e:
+            print(f"[Background] Failed to update status cache: {e}")
+        await asyncio.sleep(3600)  # Wait 1 hour
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(background_status_updater())
+
 @app.get("/", response_model=HealthResponse, tags=["Health"])
 async def health_check():
     """
