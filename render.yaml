@@ -2,7 +2,7 @@ services:
   - type: web
     name: corvette-tracker-api
     env: python
-    buildCommand: pip install -r requirements.txt && playwright install chromium
+    buildCommand: ./render-build.sh
     startCommand: uvicorn status_api:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
