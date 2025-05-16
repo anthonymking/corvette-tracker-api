@@ -9,6 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 import requests
 import pytz
+import subprocess
 
 # Configuration
 BOOKING_NUMBER = "6353072"
@@ -184,6 +185,7 @@ def send_current_status(tracking_info):
         print(f"Error sending notification: {e}")
 
 async def get_tracking_info():
+    subprocess.run(["python", "-m", "playwright", "install", "chromium"], check=True)
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)  # Run in headless mode
         context = await browser.new_context(user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
