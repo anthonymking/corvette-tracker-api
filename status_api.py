@@ -5,6 +5,7 @@ from matson_tracker import get_tracking_info
 import os
 from typing import Dict, Optional
 from pydantic import BaseModel
+import json
 
 class StatusResponse(BaseModel):
     status: str
@@ -46,27 +47,14 @@ async def health_check():
 @app.get("/status", response_model=StatusResponse, tags=["Tracking"])
 async def get_status():
     """
-    Get the current tracking status of the Corvette.
-    
-    Returns:
-        StatusResponse: Current tracking information including status, last update, location, and vessel
-        
-    Raises:
-        HTTPException: If unable to fetch tracking information
+    Get the current tracking status of the Corvette from the cache.
     """
     try:
-        tracking_info = await get_tracking_info()
-        if tracking_info:
-            return {
-                "status": tracking_info["status"],
-                "last_update": tracking_info["last_update"],
-                "location": tracking_info["location"],
-                "vessel": tracking_info["vessel"]
-            }
-        else:
-            raise HTTPException(status_code=404, detail="Unable to fetch tracking information")
+        with open("status_cache.json", "r") as f:
+            tracking_info = json.load(f)
+        return tracking_info
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Status cache not available or invalid.")
 
 if __name__ == "__main__":
     import uvicorn
