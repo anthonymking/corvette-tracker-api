@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
-from matson_tracker import get_tracking_info, send_notification
+from matson_tracker import get_tracking_info, send_notification, send_test_notification
 import os
 from typing import Dict, Optional
 from pydantic import BaseModel
@@ -105,6 +105,11 @@ async def get_status():
         return tracking_info
     except Exception as e:
         raise HTTPException(status_code=500, detail="Status cache not available or invalid.")
+
+@app.post("/test-email", tags=["Testing"])
+def test_email():
+    send_test_notification()
+    return {"message": "Test notification sent."}
 
 if __name__ == "__main__":
     import uvicorn
