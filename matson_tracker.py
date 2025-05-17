@@ -15,7 +15,7 @@ import subprocess
 BOOKING_NUMBER = "6353072"
 CHECK_INTERVAL = 3600  # Check every hour
 EMAIL_SENDER = "anthony@huikala.org"
-EMAIL_PASSWORD = "REMOVED"<==
+EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD")
 EMAIL_RECIPIENT = "anthony@huikala.org"
 
 def get_corvette_image():
