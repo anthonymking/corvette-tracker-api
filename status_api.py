@@ -111,6 +111,23 @@ def test_email():
     send_test_notification()
     return {"message": "Test notification sent."}
 
+@app.get("/send-status-email", tags=["Testing"])
+def send_status_email():
+    try:
+        with open("status_cache.json", "r") as f:
+            tracking_info = json.load(f)
+        notification_info = {
+            "previous_status": tracking_info.get("status", "Unknown"),
+            "current_status": tracking_info.get("status", "Unknown"),
+            "location": tracking_info.get("location", "Unknown"),
+            "vessel": tracking_info.get("vessel", "Unknown"),
+            "last_update": tracking_info.get("last_update", "")
+        }
+        send_notification("Corvette Tracker - Manual Status Email", notification_info)
+        return {"message": "Status notification sent.", "status": tracking_info}
+    except Exception as e:
+        return {"error": str(e)}
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
