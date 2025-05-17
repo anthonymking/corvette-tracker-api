@@ -1,11 +1,13 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
-from matson_tracker import get_tracking_info
+from matson_tracker import get_tracking_info, send_notification
 import os
 from typing import Dict, Optional
 from pydantic import BaseModel
 import json
+from datetime import datetime
+import pytz
 
 class StatusResponse(BaseModel):
     status: str
@@ -35,12 +37,45 @@ app.add_middleware(
 )
 
 async def background_status_updater():
+    last_status = None
+    last_notification_date = None
+    hst = pytz.timezone('Pacific/Honolulu')
     while True:
         try:
             status = await get_tracking_info()
             with open("status_cache.json", "w") as f:
                 json.dump(status, f)
             print("[Background] Status cache updated.")
+
+            # Email notification logic
+            current_status = status["status"]
+            now = datetime.now(hst)
+            today_str = now.strftime("%Y-%m-%d")
+            should_notify = False
+            reason = None
+
+            # Daily 6am HST notification
+            if now.hour == 6 and (last_notification_date != today_str):
+                should_notify = True
+                reason = "6am daily update"
+            # Status change notification
+            elif last_status is not None and current_status != last_status:
+                should_notify = True
+                reason = "Status change"
+
+            if should_notify:
+                notification_info = {
+                    "previous_status": last_status if last_status else "Initial Status",
+                    "current_status": current_status,
+                    "location": status.get('location', 'Unknown'),
+                    "vessel": status.get('vessel', 'Unknown'),
+                    "last_update": status.get('last_update', '')
+                }
+                send_notification(f"Corvette Tracker - Status Update ({reason})", notification_info)
+                last_notification_date = today_str
+                print(f"[Background] Email sent: {reason}")
+
+            last_status = current_status
         except Exception as e:
             print(f"[Background] Failed to update status cache: {e}")
         await asyncio.sleep(3600)  # Wait 1 hour
