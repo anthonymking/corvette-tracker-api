@@ -112,6 +112,7 @@ def send_notification(subject, tracking_info):
             <div class="footer">
                 <p>Your Corvette is on its way! 🚢</p>
                 <p><a href="https://www.matson.com/auto-tracking.html" class="link">Track on Matson Website</a></p>
+                <p><a href="https://www.vesselfinder.com/?imo=9814600" class="link">Real-time Vessel Tracking</a></p>
             </div>
         </div>
     </body>
@@ -164,6 +165,7 @@ def send_current_status(tracking_info):
             <div class="footer">
                 <p>Current status of your Corvette shipment</p>
                 <p><a href="https://www.matson.com/auto-tracking.html" class="link">Track on Matson Website</a></p>
+                <p><a href="https://www.vesselfinder.com/?imo=9814600" class="link">Real-time Vessel Tracking</a></p>
             </div>
         </div>
     </body>
