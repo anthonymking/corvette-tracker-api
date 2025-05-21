@@ -10,6 +10,7 @@ from email.mime.image import MIMEImage
 import requests
 import pytz
 import subprocess
+import re
 
 # Configuration
 BOOKING_NUMBER = "6353072"
@@ -205,15 +206,30 @@ async def get_tracking_info():
             await page.wait_for_selector("#shipmentTrackingDetails", timeout=10000)
             details = await page.text_content("#shipmentTrackingDetails")
 
+            print("\n--- DEBUG: Raw details from Matson tracking page ---\n")
+            print(details)
+            print("\n--- END DEBUG ---\n")
+
             # Parse the details
             status = "Unknown"
             location = "Unknown"
             vessel = "Unknown"
-            
-            # Extract the status message
-            if "Your vehicle has been received by Matson and is awaiting vessel load to the MATSONIA 063" in details:
-                status = "Your vehicle has been received by Matson and is awaiting vessel load to the MATSONIA 063"
-            
+
+            # Use regex to extract vessel, location, and status
+            if details:
+                # Vessel and location extraction
+                vessel_match = re.search(r"aboard the ([A-Z0-9 ]+) and is scheduled to arrive in ([A-Z ()]+)", details)
+                if vessel_match:
+                    vessel = vessel_match.group(1).strip()
+                    location = vessel_match.group(2).strip()
+                # Status extraction: from 'Your vehicle' to the pick-up date line
+                status_match = re.search(r'(Your vehicle.*?)(?:Your estimated available pick-up date is:|Track another vehicle)', details, re.DOTALL)
+                if status_match:
+                    status = status_match.group(1).replace('\n', ' ').strip()
+                else:
+                    # fallback: just use the first 200 chars as status
+                    status = details.strip()[:200]
+
             tracking_info = {
                 "status": status,
                 "last_update": datetime.now().strftime("%m-%d-%Y"),
