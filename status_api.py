@@ -128,6 +128,21 @@ def send_status_email():
     except Exception as e:
         return {"error": str(e)}
 
+@app.get("/send-current-status", tags=["Testing"])
+async def send_current_status_endpoint():
+    """
+    Manually trigger sending the current status email.
+    """
+    try:
+        tracking_info = await get_tracking_info()
+        if tracking_info:
+            send_current_status(tracking_info)
+            return {"message": "Current status email sent successfully", "status": tracking_info}
+        else:
+            return {"error": "Failed to fetch tracking information"}
+    except Exception as e:
+        return {"error": str(e)}
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
